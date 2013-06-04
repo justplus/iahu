@@ -36,7 +36,8 @@ def parse_msg(rawmsgstr):
     for child in root:
         msg[child.tag] = child.text
     return msg
-    
+
+#获取天气
 def get_weather(wtype):
     if wtype == 0:
         url = "http://www.weather.com.cn/data/cityinfo/101220101.html"
@@ -49,6 +50,7 @@ def get_weather(wtype):
         weather=None
     return weather
 
+#获取校车时刻
 def get_schoolbus(schoolname):
     cday = date.isoweekday(date.today())
     if cday == 6:
@@ -67,6 +69,7 @@ def get_schoolbus(schoolname):
         else:
             return u"今日新校区发车时间为： 7:15  8:10  9:00  10:10  11:10  12:00  14:20  15:40  16:30  17:20  18:30  21:30"
 
+#获取部门电话
 def get_phone(deptname):
     sqlstr = "select * from phoneDB where dept like '%" + deptname + "%'"
     results = db.query(sqlstr)
@@ -74,7 +77,8 @@ def get_phone(deptname):
     for result in results:
         retstr = "%s%s:%s "%(retstr,result.dept,result.phone)
     return retstr
-    
+
+#获取教务处新闻
 def get_jwcnews():
     sqlstr = "select * from jwcnewsDB limit 0,10"
     results = db.query(sqlstr)
@@ -86,7 +90,8 @@ def get_jwcnews():
                 <Url><![CDATA[%s]]></Url>
                 </item>"""%(retstr,result.newsTitle,result.newsPubDate,result.newsLink)
     return "<ArticleCount>10</ArticleCount><Articles>%s</Articles>"%(retstr)
-    
+
+#获取宣讲会信息
 def get_jobnews():
     sqlstr = "select count(*) as rc from jobnewsDB order by jobDate limit 0,10"
     countresult = db.query(sqlstr)
@@ -104,6 +109,7 @@ def get_jobnews():
                 </item>"""%(retstr,tmpstr,result.jobLink)
     return "<ArticleCount>%s</ArticleCount><Articles>%s</Articles>"%(rcount,retstr)
 
+#获取课程信息
 def get_course(courseName):
     sqlstr = "select count(*) as rc from courseDB where courseName like '%" + courseName + "%'"
     countresult = db.query(sqlstr)
@@ -117,7 +123,8 @@ def get_course(courseName):
         tmpstr = u"%s %s %s学分 %s\n"%(result.courseName,result.courseType,result.courseCredit,result.courseSchool)
         retstr = "%s%s"%(retstr,tmpstr)
     return retstr[0:-2]
-    
+
+#获取教师信息
 def get_teacher(teacherName):
     sqlstr = "select count(*) as rc FROM scheduleDB inner join teacherDB inner join courseDB on teacherDB.teacherName = '%s' and scheduleDB.courseID = courseDB.courseID and scheduleDB.teacherID = teacherDB.teacherID group by courseName"%teacherName
     countresult = db.query(sqlstr)
@@ -131,7 +138,8 @@ def get_teacher(teacherName):
         tmpstr = u"教职工号：%s  姓名：%s  职称：%s   院系：%s   授课：%s(%s)\n"%(result.teacherID,result.teacherName,result.teacherTitle,result.teacherDept,result.courseName,result.courseSchool)
         retstr = "%s%s"%(retstr,tmpstr)
     return retstr[0:-2]
-    
+
+#获取课程表信息
 def get_coursetable(roomName):
     try:
         qweek = common.get_week_today()
@@ -144,7 +152,8 @@ def get_coursetable(roomName):
         return None
     else:
         return retstr[0:-2]
-        
+
+#获取教室信息
 def get_classroom(condition):
     try:
         if condition == u"博南" or condition == u"博学南楼":
@@ -172,10 +181,12 @@ def get_classroom(condition):
         return None
     else:
         return retstr
-        
+
+#去除空格
 def stripblank(s):
     return unicode(s.strip().lstrip("\r\n        ").rstrip("\r\n        "), "utf-8")
-        
+
+#获取图书馆书籍信息
 def get_book(bookName):
     keyword = urllib2.quote(bookName.encode("utf-8"))
     getstring = "http://lib.ahu.cn/b_s.php?k=" + keyword + "&s_t=title&page=1&source=0&model=1&sort_t=CATA_DATE&sort_v=2&aaa=%E6%A3%80%E7%B4%A2"
@@ -196,7 +207,8 @@ def get_book(bookName):
                 <Url><![CDATA[http://lib.ahu.cn/%s]]></Url>
                 </item>"""%(retstr,tmpstr,result[0])
     return "<ArticleCount>%s</ArticleCount><Articles>%s</Articles>"%(len(results),retstr)
-    
+
+#获取豆瓣电影信息
 def get_movie(moviename):
     movieurlbase = "http://api.douban.com/v2/movie/search"
     DOUBAN_APIKEY = "082d3d40a387e2571887b7c1ea97a705"
@@ -217,7 +229,8 @@ def get_movie(moviename):
              <Url><![CDATA[http://lib.ahu.cn/%s]]></Url>
              </item>"""%(movie["subjects"][0]["title"],description,movie["subjects"][0]["images"]["large"],movie["subjects"][0]["alt"])
     return "<ArticleCount>1</ArticleCount><Articles>%s</Articles>"%(retstr)
-    
+
+#获取豆瓣音乐信息
 def get_music(musicname):
     musicurlbase = "http://api.douban.com/v2/music/search"
     DOUBAN_APIKEY = "082d3d40a387e2571887b7c1ea97a705"
@@ -236,7 +249,7 @@ def get_music(musicname):
              </item>"""%(music["musics"][0]["title"],description,music["musics"][0]["image"].replace("spic","lpic"),music["musics"][0]["mobile_link"])
     return "<ArticleCount>1</ArticleCount><Articles>%s</Articles>"%(retstr)
     
-
+#获取豆瓣电台信息
 def get_musicurl(chname):
     try:
         """query =  urllib2.quote(musicname.encode("utf-8"))
